@@ -4,7 +4,7 @@
 #
 Name     : libtheora
 Version  : 1.1.1
-Release  : 1
+Release  : 2
 URL      : http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
 Source0  : http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
 Summary  : Development tools for Theora applications.
@@ -83,8 +83,12 @@ rm -rf %{buildroot}
 /usr/include/theora/theora.h
 /usr/include/theora/theoradec.h
 /usr/include/theora/theoraenc.h
-/usr/lib64/*.so
-/usr/lib64/pkgconfig/*.pc
+/usr/lib64/libtheora.so
+/usr/lib64/libtheoradec.so
+/usr/lib64/libtheoraenc.so
+/usr/lib64/pkgconfig/theora.pc
+/usr/lib64/pkgconfig/theoradec.pc
+/usr/lib64/pkgconfig/theoraenc.pc
 
 %files doc
 %defattr(-,root,root,-)
@@ -92,4 +96,9 @@ rm -rf %{buildroot}
 
 %files lib
 %defattr(-,root,root,-)
-/usr/lib64/*.so.*
+/usr/lib64/libtheora.so.0
+/usr/lib64/libtheora.so.0.3.10
+/usr/lib64/libtheoradec.so.1
+/usr/lib64/libtheoradec.so.1.1.4
+/usr/lib64/libtheoraenc.so.1
+/usr/lib64/libtheoraenc.so.1.1.2
