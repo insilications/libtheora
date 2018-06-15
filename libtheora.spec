@@ -24,7 +24,7 @@ BuildRequires : pkgconfig(cairo)
 BuildRequires : pkgconfig(libpng)
 BuildRequires : pkgconfig(ogg)
 BuildRequires : pkgconfig(vorbis)
-BuildRequires : python-dev
+
 BuildRequires : scons
 BuildRequires : zlib-dev32
 Patch1: 0001-Change-png_sizeof-by-sizeof-function.patch
