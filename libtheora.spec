@@ -4,19 +4,21 @@
 #
 Name     : libtheora
 Version  : 1.1.1
-Release  : 10
+Release  : 11
 URL      : http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
 Source0  : http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2
 Summary  : Development tools for Theora applications.
 Group    : Development/Tools
 License  : BSD-3-Clause
-Requires: libtheora-lib
-Requires: libtheora-doc
+Requires: libtheora-lib = %{version}-%{release}
+Requires: libtheora-license = %{version}-%{release}
+BuildRequires : buildreq-scons
 BuildRequires : gcc-dev32
 BuildRequires : gcc-libgcc32
 BuildRequires : gcc-libstdc++32
 BuildRequires : glibc-dev32
 BuildRequires : glibc-libc32
+BuildRequires : pkg-config
 BuildRequires : pkgconfig(32libpng)
 BuildRequires : pkgconfig(32ogg)
 BuildRequires : pkgconfig(32vorbis)
@@ -24,8 +26,6 @@ BuildRequires : pkgconfig(cairo)
 BuildRequires : pkgconfig(libpng)
 BuildRequires : pkgconfig(ogg)
 BuildRequires : pkgconfig(vorbis)
-
-BuildRequires : scons
 BuildRequires : zlib-dev32
 Patch1: 0001-Change-png_sizeof-by-sizeof-function.patch
 
@@ -40,8 +40,9 @@ in the future to improve over what is possible with VP3.
 %package dev
 Summary: dev components for the libtheora package.
 Group: Development
-Requires: libtheora-lib
-Provides: libtheora-devel
+Requires: libtheora-lib = %{version}-%{release}
+Provides: libtheora-devel = %{version}-%{release}
+Requires: libtheora = %{version}-%{release}
 
 %description dev
 dev components for the libtheora package.
@@ -50,8 +51,8 @@ dev components for the libtheora package.
 %package dev32
 Summary: dev32 components for the libtheora package.
 Group: Default
-Requires: libtheora-lib32
-Requires: libtheora-dev
+Requires: libtheora-lib32 = %{version}-%{release}
+Requires: libtheora-dev = %{version}-%{release}
 
 %description dev32
 dev32 components for the libtheora package.
@@ -68,6 +69,7 @@ doc components for the libtheora package.
 %package lib
 Summary: lib components for the libtheora package.
 Group: Libraries
+Requires: libtheora-license = %{version}-%{release}
 
 %description lib
 lib components for the libtheora package.
@@ -76,9 +78,18 @@ lib components for the libtheora package.
 %package lib32
 Summary: lib32 components for the libtheora package.
 Group: Default
+Requires: libtheora-license = %{version}-%{release}
 
 %description lib32
 lib32 components for the libtheora package.
+
+
+%package license
+Summary: license components for the libtheora package.
+Group: Default
+
+%description license
+license components for the libtheora package.
 
 
 %prep
@@ -92,29 +103,42 @@ popd
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-export LANG=C
-export SOURCE_DATE_EPOCH=1501861951
+export LANG=C.UTF-8
+export SOURCE_DATE_EPOCH=1569532661
+export GCC_IGNORE_WERROR=1
+export AR=gcc-ar
+export RANLIB=gcc-ranlib
+export NM=gcc-nm
+export CFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
+export FCFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
+export FFLAGS="$CFLAGS -O3 -ffat-lto-objects -flto=4 "
+export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=4 "
 %configure --disable-static
-make V=1  %{?_smp_mflags}
+make  %{?_smp_mflags}
 
 pushd ../build32/
 export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"
-export CFLAGS="$CFLAGS -m32"
-export CXXFLAGS="$CXXFLAGS -m32"
-export LDFLAGS="$LDFLAGS -m32"
+export ASFLAGS="${ASFLAGS}${ASFLAGS:+ }--32"
+export CFLAGS="${CFLAGS}${CFLAGS:+ }-m32 -mstackrealign"
+export CXXFLAGS="${CXXFLAGS}${CXXFLAGS:+ }-m32 -mstackrealign"
+export LDFLAGS="${LDFLAGS}${LDFLAGS:+ }-m32 -mstackrealign"
 %configure --disable-static    --libdir=/usr/lib32 --build=i686-generic-linux-gnu --host=i686-generic-linux-gnu --target=i686-clr-linux-gnu
-make V=1  %{?_smp_mflags}
+make  %{?_smp_mflags}
 popd
 %check
-export LANG=C
+export LANG=C.UTF-8
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check
+cd ../build32;
+make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1501861951
+export SOURCE_DATE_EPOCH=1569532661
 rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/share/package-licenses/libtheora
+cp COPYING %{buildroot}/usr/share/package-licenses/libtheora/COPYING
 pushd ../build32/
 %make_install32
 if [ -d  %{buildroot}/usr/lib32/pkgconfig ]
@@ -155,7 +179,7 @@ popd
 /usr/lib32/pkgconfig/theoraenc.pc
 
 %files doc
-%defattr(-,root,root,-)
+%defattr(0644,root,root,0755)
 %doc /usr/share/doc/libtheora/*
 
 %files lib
@@ -175,3 +199,7 @@ popd
 /usr/lib32/libtheoradec.so.1.1.4
 /usr/lib32/libtheoraenc.so.1
 /usr/lib32/libtheoraenc.so.1.1.2
+
+%files license
+%defattr(0644,root,root,0755)
+/usr/share/package-licenses/libtheora/COPYING
